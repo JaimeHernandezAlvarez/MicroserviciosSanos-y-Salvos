@@ -11,14 +11,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.proyect.pet.repository")
+@EnableMongoRepositories(basePackages = "com.proyect.imagenes.repository")
 public class MongoConfig {
     
     private final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     
     @Bean
     public MongoClient mongoClient() {
-        String connectionString = dotenv.get("PET_URI", "mongodb://localhost:27017/db_fullstack");
+        String connectionString = dotenv.get("IMG_URI", "mongodb://localhost:27017/db_fullstack");
         ConnectionString connString = new ConnectionString(connectionString);
         MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(connString)

@@ -19,15 +19,4 @@ public class ImageRequestDTO {
     
     @NotNull(message = "File is required")
     private MultipartFile file;
-    
-    @NotBlank(message = "User ID is required")
-    private String userId;
-    
-    @NotBlank(message = "User email is required")
-    private String userEmail;
-    
-    private String petId;
-    private String title;
-    private String description;
-    private String category;
 }

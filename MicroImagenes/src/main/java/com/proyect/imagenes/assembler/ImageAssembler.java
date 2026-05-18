@@ -15,10 +15,9 @@ public class ImageAssembler implements RepresentationModelAssembler<ImageRespons
     public EntityModel<ImageResponseDTO> toModel(ImageResponseDTO dto) {
         return EntityModel.of(dto,
                 linkTo(methodOn(ImageController.class).getImageById(dto.getImageId())).withSelfRel(),
-                linkTo(methodOn(ImageController.class).downloadImage(dto.getImageId(), dto.getUserId())).withRel("download"),
-                linkTo(methodOn(ImageController.class).deleteImage(dto.getImageId(), dto.getUserId())).withRel("delete"),
-                linkTo(methodOn(ImageController.class).getImagesByUser(dto.getUserId())).withRel("user-images"),
-                linkTo(methodOn(ImageController.class).getAllImages()).withRel("all-images")
+                linkTo(methodOn(ImageController.class).downloadImage(dto.getImageId())).withRel("download"),
+                linkTo(methodOn(ImageController.class).deleteImage(dto.getImageId())).withRel("delete"),
+                linkTo(methodOn(ImageController.class).checkImageExists(dto.getImageId())).withRel("exists")
         );
     }
 }
