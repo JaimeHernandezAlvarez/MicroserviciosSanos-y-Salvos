@@ -8,8 +8,11 @@ import io.github.cdimascio.dotenv.Dotenv;
 @SpringBootApplication
 public class NotificationApplication {
 public static void main(String[] args) {
-    Dotenv dotenv = Dotenv.load();
-    System.setProperty("NOT_URI", dotenv.get("NOT_URI"));
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+    String notUri = dotenv.get("NOT_URI");
+    if (notUri != null) {
+        System.setProperty("NOT_URI", notUri);
+    }
 		SpringApplication.run(NotificationApplication.class, args);
 	}
 }
