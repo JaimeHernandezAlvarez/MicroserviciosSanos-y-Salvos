@@ -6,8 +6,11 @@ import io.github.cdimascio.dotenv.Dotenv;
 @SpringBootApplication
 public class PetApplication {
 public static void main(String[] args) {
-    Dotenv dotenv = Dotenv.load();
-    System.setProperty("PET_URI", dotenv.get("PET_URI"));
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+    String petUri = dotenv.get("PET_URI");
+    if (petUri != null) {
+        System.setProperty("USER_URI", petUri);
+    }
 		SpringApplication.run(PetApplication.class, args);
 	}
 
