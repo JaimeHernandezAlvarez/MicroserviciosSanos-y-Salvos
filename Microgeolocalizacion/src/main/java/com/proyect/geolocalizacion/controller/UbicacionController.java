@@ -1,53 +1,100 @@
 package com.proyect.geolocalizacion.controller;
 
+import com.proyect.geolocalizacion.Assembler.UbicacionModelAssembler;
 import com.proyect.geolocalizacion.model.Ubicacion;
 import com.proyect.geolocalizacion.service.UbicacionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-@RequestMapping("/api/geolocalizacion")
+@RequestMapping("/api/geolocalizacion") // O "/api/geo" si el equipo acordó acortarlo
 public class UbicacionController {
 
     @Autowired
     private UbicacionService ubicacionService;
 
-    // 1. Endpoint para registrar un nuevo avistamiento/ubicación
-    // POST http://localhost:8082/api/geolocalizacion
+    @Autowired
+    private UbicacionModelAssembler assembler;
+
+    // 1. POST / -> Registrar ubicación
     @PostMapping
-    public ResponseEntity<Ubicacion> registrarUbicacion(@RequestBody Ubicacion ubicacion) {
-        Ubicacion nuevaUbicacion = ubicacionService.guardarUbicacion(ubicacion);
-        return new ResponseEntity<>(nuevaUbicacion, HttpStatus.CREATED);
+    public ResponseEntity<EntityModel<Ubicacion>> registrarUbicacion(@RequestBody Ubicacion ubicacion) {
+        Ubicacion nueva = ubicacionService.guardarUbicacion(ubicacion);
+        return new ResponseEntity<>(assembler.toModel(nueva), HttpStatus.CREATED);
     }
 
-    // 2. Endpoint para obtener el historial de ubicaciones de una mascota específica
-    // GET http://localhost:8082/api/geolocalizacion/reporte/{reportId}
-    @getMapping("/reporte/{reportId}")
-    public ResponseEntity<List<Ubicacion>> obtenerPorReporte(@PathVariable String reportId) {
-        List<Ubicacion> historial = ubicacionService.obtenerPorReporte(reportId);
-        return ResponseEntity.ok(historial);
+    // 2. GET / -> Obtener todas (Reemplaza al antiguo /heatmap)
+    @SuppressWarnings("null")
+    @GetMapping
+    public CollectionModel<EntityModel<Ubicacion>> obtenerTodas() {
+        List<EntityModel<Ubicacion>> todas = ubicacionService.obtenerTodas().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(todas,
+                linkTo(methodOn(UbicacionController.class).obtenerTodas()).withSelfRel());
     }
 
-    // 3. Endpoint para buscar avistamientos cercanos (Ideal para el radar o mapa del Frontend)
-    // GET http://localhost:8082/api/geolocalizacion/cercanos?lng=-70.648&lat=-33.456&radio=5.0
-    @getMapping("/cercanos")
-    public ResponseEntity<List<Ubicacion>> buscarCercanos(
+    // 3. GET /{id} -> Obtener una ubicación individual
+    @GetMapping("/{id}")
+    public ResponseEntity<EntityModel<Ubicacion>> obtenerPorId(@PathVariable String id) {
+        return ubicacionService.obtenerPorId(id)
+                .map(assembler::toModel)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 4. GET /pet/{petId} -> Historial de ubicaciones de una mascota
+    @SuppressWarnings("null")
+    @GetMapping("/pet/{petId}")
+    public CollectionModel<EntityModel<Ubicacion>> obtenerPorMascota(@PathVariable String petId) {
+        List<EntityModel<Ubicacion>> historial = ubicacionService.obtenerPorReporte(petId).stream() // Asumiendo que el service aún usa "obtenerPorReporte"
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(historial,
+                linkTo(methodOn(UbicacionController.class).obtenerPorMascota(petId)).withSelfRel());
+    }
+
+    // 5. GET /nearby -> Buscar avistamientos cercanos
+    @SuppressWarnings("null")
+    @GetMapping("/nearby")
+    public CollectionModel<EntityModel<Ubicacion>> buscarCercanos(
             @RequestParam double lng,
             @RequestParam double lat,
             @RequestParam(defaultValue = "5.0") double radio) {
-        List<Ubicacion> cercanas = ubicacionService.buscarCercanos(lng, lat, radio);
-        return ResponseEntity.ok(cercanas);
+        
+        List<EntityModel<Ubicacion>> cercanas = ubicacionService.buscarCercanos(lng, lat, radio).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(cercanas,
+                linkTo(methodOn(UbicacionController.class).buscarCercanos(lng, lat, radio)).withSelfRel());
     }
 
-    // 4. Endpoint para traer todo (Generación del Heatmap / Mapa de calor)
-    // GET http://localhost:8082/api/geolocalizacion/heatmap
-    @getMapping("/heatmap")
-    public ResponseEntity<List<Ubicacion>> obtenerHeatmap() {
-        List<Ubicacion> todas = ubicacionService.obtenerTodas();
-        return ResponseEntity.ok(todas);
+    // 6. PUT /{id} -> Actualizar una ubicación
+    @PutMapping("/{id}")
+    public ResponseEntity<EntityModel<Ubicacion>> actualizarUbicacion(@PathVariable String id, @RequestBody Ubicacion ubicacion) {
+        return ubicacionService.actualizarUbicacion(id, ubicacion)
+                .map(assembler::toModel)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 7. DELETE /{id} -> Eliminar una ubicación
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUbicacion(@PathVariable String id) {
+        return ubicacionService.eliminarUbicacion(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }
