@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MatchActionDTO {
     private String matchId;
-    private String action;      // ACCEPT, REJECT
-    private String message;     // Mensaje opcional
-    private String userId;      // ID del usuario que responde
+    private String action;      //ACCEPT, REJECT
+    private String message;     //Mensaje opcional
+    private String userId;      //ID del usuario que responde
 }

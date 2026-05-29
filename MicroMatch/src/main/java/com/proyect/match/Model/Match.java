@@ -21,27 +21,26 @@ public class Match {
     private String id;
     
     @Indexed
-    private String lostPetId;      // ID de la mascota perdida
+    private String lostPetId; 
     
     @Indexed
-    private String foundPetId;     // ID de la mascota encontrada
+    private String foundPetId;     
     
-    private String ownerId;        // Dueño de la mascota perdida
+    private String ownerId;        
     
-    private String founderId;      // Quien encontró la mascota
+    private String founderId;      
     
-    // Estados: PENDING, ACCEPTED, REJECTED, COMPLETED
     private String status;
     
-    private double similarityScore; // Puntaje de similitud (0-100)
+    private double similarityScore; 
     
-    private String matchReason;     // Por qué hicieron match
+    private String matchReason;
     
     private LocalDateTime matchedAt;
     private LocalDateTime respondedAt;
     
-    private String ownerResponse;   // Mensaje del dueño
-    private String founderResponse; // Mensaje del fundador
+    private String ownerResponse;   
+    private String founderResponse; 
     
     @Builder.Default
     private boolean active = true;

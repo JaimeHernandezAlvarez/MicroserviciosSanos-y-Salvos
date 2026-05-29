@@ -18,7 +18,7 @@ public class UbicacionService {
     @Autowired
     private UbicacionRepository ubicacionRepository;
 
-    // Registrar un nuevo avistamiento o ubicación de mascota
+    //Registrar avistamiento o ubicación de mascota
     public Ubicacion guardarUbicacion(Ubicacion ubicacion) {
         if (ubicacion.getFechaRegistro() == null) {
             ubicacion.setFechaRegistro(LocalDateTime.now());
@@ -26,12 +26,12 @@ public class UbicacionService {
         return ubicacionRepository.save(ubicacion);
     }
 
-    // Obtener el historial de puntos de una misma mascota
+    //historial de puntos de una misma mascota
     public List<Ubicacion> obtenerPorReporte(String reportId) {
         return ubicacionRepository.findByReportId(reportId);
     }
 
-    // Buscar avistamientos cercanos en un radio de kilómetros (ideal para el mapa)
+    //avistamientos cercanos
     public List<Ubicacion> buscarCercanos(double longitud, double latitud, double radioKilometros) {
         Point punto = new Point(longitud, latitud);
         // Convertimos el radio de kilómetros a la métrica que entiende Spring Data
@@ -39,18 +39,18 @@ public class UbicacionService {
         return ubicacionRepository.findByPosicionNear(punto, distancia);
     }
 
-    // Obtener absolutamente todas las ubicaciones (útil para armar el mapa de calor general)
+    //todas las ubicaciones
     public List<Ubicacion> obtenerTodas() {
         return ubicacionRepository.findAll();
     }
 
-    // 1. Obtener por ID
+    //Obtener por ID
     @SuppressWarnings("null")
     public Optional<Ubicacion> obtenerPorId(String id) {
         return ubicacionRepository.findById(id);
     }
 
-    // 2. Actualizar Ubicación
+    //Actualizar Ubicación
     @SuppressWarnings("null")
     public Optional<Ubicacion> actualizarUbicacion(String id, Ubicacion datosNuevos) {
         return ubicacionRepository.findById(id).map(ubicacion -> {
@@ -61,7 +61,7 @@ public class UbicacionService {
         });
     }
 
-    // 3. Eliminar
+    //Eliminar
     @SuppressWarnings("null")
     public boolean eliminarUbicacion(String id) {
         return ubicacionRepository.findById(id).map(ubicacion -> {

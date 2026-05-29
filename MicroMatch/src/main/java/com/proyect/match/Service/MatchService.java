@@ -38,6 +38,7 @@ public class MatchService {
                 .active(true)
                 .build();
         
+        @SuppressWarnings("null")
         Match savedMatch = matchRepository.save(match);
         log.info("Match created: {} between {} and {}", savedMatch.getId(), 
                  request.getLostPetId(), request.getFoundPetId());
@@ -47,6 +48,7 @@ public class MatchService {
     
     // Obtener match por ID
     public MatchResponseDTO getMatchById(String matchId) {
+        @SuppressWarnings("null")
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new MatchNotFoundException("Match not found with ID: " + matchId));
         return convertToResponseDTO(match);
@@ -75,6 +77,7 @@ public class MatchService {
     
     // Responder a un match
     public MatchResponseDTO respondToMatch(MatchActionDTO action) {
+        @SuppressWarnings("null")
         Match match = matchRepository.findById(action.getMatchId())
                 .orElseThrow(() -> new MatchNotFoundException("Match not found"));
         
@@ -98,6 +101,7 @@ public class MatchService {
     
     // Completar el match
     public MatchResponseDTO completeMatch(String matchId) {
+        @SuppressWarnings("null")
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new MatchNotFoundException("Match not found"));
         
@@ -111,6 +115,7 @@ public class MatchService {
     }
     
     // Eliminar match
+    @SuppressWarnings("null")
     public void deleteMatch(String matchId) {
         if (!matchRepository.existsById(matchId)) {
             throw new MatchNotFoundException("Match not found with ID: " + matchId);
@@ -120,12 +125,15 @@ public class MatchService {
     }
     
     // ✅ MÉTODO AGREGADO - Verificar si existe
+    @SuppressWarnings("null")
     public boolean matchExists(String matchId) {
         return matchRepository.existsById(matchId);
     }
     
     // Actualizar ownerId y founderId
+    @SuppressWarnings("null")
     public void updatePetOwners(String matchId, String ownerId, String founderId) {
+        @SuppressWarnings("null")
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new MatchNotFoundException("Match not found"));
         

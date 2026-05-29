@@ -8,12 +8,12 @@ import java.util.List;
 
 @Repository
 public interface MascotaRepository extends MongoRepository<Mascota, String> {
-    // Buscar mascotas por estado (LOST, FOUND, REUNITED)
+    //Buscar mascotas por estado
     List<Mascota> findByStatus(String status);
     
-    // Buscar todas las mascotas de un dueño específico
+    //Buscar por dueño
     List<Mascota> findByOwnerId(String ownerId);
     
-    // Buscar por especie (ej: todos los perros)
+    //Buscar por especie
     List<Mascota> findBySpecies(String species);
 }

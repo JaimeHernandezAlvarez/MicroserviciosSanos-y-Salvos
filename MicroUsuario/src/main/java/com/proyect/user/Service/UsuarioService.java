@@ -26,7 +26,6 @@ public class UsuarioService {
 
     //Registrar
     public Usuario save(Usuario usuario) {
-        // Por defecto, podemos setear el usuario como activo al registrarse
         usuario.setActive(true);
         return usuarioRepository.save(usuario);
     }
@@ -37,13 +36,11 @@ public class UsuarioService {
         
         if (usuarioExistente.isPresent()) {
             Usuario usuario = usuarioExistente.get();
-            // Actualizamos solo los campos permitidos
             usuario.setName(usuarioActualizado.getName());
             usuario.setPhone(usuarioActualizado.getPhone());
             usuario.setRole(usuarioActualizado.getRole());
             usuario.setPetsIds(usuarioActualizado.getPetsIds());
             usuario.setActive(usuarioActualizado.isActive());
-            // Guardamos los cambios
             return usuarioRepository.save(usuario);
         }
         return null;
