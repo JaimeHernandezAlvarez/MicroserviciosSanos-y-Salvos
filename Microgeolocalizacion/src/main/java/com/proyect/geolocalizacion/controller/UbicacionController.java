@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-@RequestMapping("/api/geolocalizacion") // O "/api/geo" si el equipo acordó acortarlo
+@RequestMapping("/api/geolocalizacion") 
 public class UbicacionController {
 
     @Autowired
@@ -25,14 +25,14 @@ public class UbicacionController {
     @Autowired
     private UbicacionModelAssembler assembler;
 
-    // 1. POST / -> Registrar ubicación
+    //post ubicacion
     @PostMapping
     public ResponseEntity<EntityModel<Ubicacion>> registrarUbicacion(@RequestBody Ubicacion ubicacion) {
         Ubicacion nueva = ubicacionService.guardarUbicacion(ubicacion);
         return new ResponseEntity<>(assembler.toModel(nueva), HttpStatus.CREATED);
     }
 
-    // 2. GET / -> Obtener todas (Reemplaza al antiguo /heatmap)
+    //get todos
     @SuppressWarnings("null")
     @GetMapping
     public CollectionModel<EntityModel<Ubicacion>> obtenerTodas() {
@@ -44,7 +44,7 @@ public class UbicacionController {
                 linkTo(methodOn(UbicacionController.class).obtenerTodas()).withSelfRel());
     }
 
-    // 3. GET /{id} -> Obtener una ubicación individual
+    //get solo
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Ubicacion>> obtenerPorId(@PathVariable String id) {
         return ubicacionService.obtenerPorId(id)
@@ -53,7 +53,7 @@ public class UbicacionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. GET /pet/{petId} -> Historial de ubicaciones de una mascota
+    //historial mascotas
     @SuppressWarnings("null")
     @GetMapping("/pet/{petId}")
     public CollectionModel<EntityModel<Ubicacion>> obtenerPorMascota(@PathVariable String petId) {
@@ -65,7 +65,7 @@ public class UbicacionController {
                 linkTo(methodOn(UbicacionController.class).obtenerPorMascota(petId)).withSelfRel());
     }
 
-    // 5. GET /nearby -> Buscar avistamientos cercanos
+    //ubicaciones cercanas
     @SuppressWarnings("null")
     @GetMapping("/nearby")
     public CollectionModel<EntityModel<Ubicacion>> buscarCercanos(
@@ -81,7 +81,7 @@ public class UbicacionController {
                 linkTo(methodOn(UbicacionController.class).buscarCercanos(lng, lat, radio)).withSelfRel());
     }
 
-    // 6. PUT /{id} -> Actualizar una ubicación
+    //actualizar ubicacion
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Ubicacion>> actualizarUbicacion(@PathVariable String id, @RequestBody Ubicacion ubicacion) {
         return ubicacionService.actualizarUbicacion(id, ubicacion)
@@ -90,7 +90,7 @@ public class UbicacionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 7. DELETE /{id} -> Eliminar una ubicación
+    //eliminar ubicacion
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUbicacion(@PathVariable String id) {
         return ubicacionService.eliminarUbicacion(id)

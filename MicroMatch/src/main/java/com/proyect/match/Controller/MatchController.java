@@ -54,6 +54,7 @@ public class MatchController {
         return ResponseEntity.ok(matchAssembler.toModel(match));
     }
     
+    @SuppressWarnings("null")
     @GetMapping("/owner/{ownerId}")
     @Operation(summary = "Get all matches for an owner")
     public ResponseEntity<CollectionModel<EntityModel<MatchResponseDTO>>> getMatchesByOwnerId(@PathVariable String ownerId) {
@@ -66,6 +67,7 @@ public class MatchController {
                 linkTo(methodOn(MatchController.class).getMatchesByOwnerId(ownerId)).withSelfRel()));
     }
     
+    @SuppressWarnings("null")
     @GetMapping("/founder/{founderId}")
     @Operation(summary = "Get all matches for a founder")
     public ResponseEntity<CollectionModel<EntityModel<MatchResponseDTO>>> getMatchesByFounderId(@PathVariable String founderId) {
@@ -78,6 +80,7 @@ public class MatchController {
                 linkTo(methodOn(MatchController.class).getMatchesByFounderId(founderId)).withSelfRel()));
     }
     
+    @SuppressWarnings("null")
     @GetMapping("/owner/{ownerId}/pending")
     @Operation(summary = "Get pending matches for an owner")
     public ResponseEntity<CollectionModel<EntityModel<MatchResponseDTO>>> getPendingMatchesForOwner(@PathVariable String ownerId) {

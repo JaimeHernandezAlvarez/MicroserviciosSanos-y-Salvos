@@ -10,13 +10,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
-        registry.addMapping("/**") // Habilita CORS para todas las rutas del microservicio
-                // Aquí colocamos los puertos típicos de React. Puedes agregar más si usan otros.
+        registry.addMapping("/**") 
                 .allowedOrigins("http://localhost:3000", "http://localhost:5173") 
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
-                // allowCredentials es VITAL si en el futuro envían tokens JWT en cookies o headers de autorización
                 .allowCredentials(true) 
-                .maxAge(3600); // Guarda en caché la validación de CORS por 1 hora para optimizar el frontend
+                .maxAge(3600); 
     }
 }

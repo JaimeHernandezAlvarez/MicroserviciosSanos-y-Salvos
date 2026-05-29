@@ -26,15 +26,13 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // Inyectamos nuestro nuevo Assembler
     @Autowired
     private UsuarioModelAssembler assembler;
 
-    // GET /api/usuarios
     @GetMapping
     public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
         List<EntityModel<Usuario>> usuariosModel = usuarioService.findAll().stream()
-                .map(assembler::toModel) // <- Usamos el assembler aquí
+                .map(assembler::toModel) 
                 .collect(Collectors.toList());
 
         CollectionModel<EntityModel<Usuario>> collectionModel = CollectionModel.of(usuariosModel,
@@ -43,16 +41,14 @@ public class UsuarioController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    // GET /api/usuarios/{id}
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> obtenerUsuarioPorId(@PathVariable String id) {
         return usuarioService.findById(id)
-                .map(assembler::toModel) // <- Usamos el assembler aquí
+                .map(assembler::toModel) 
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/usuarios/register
     @PostMapping("/register")
     public ResponseEntity<EntityModel<Usuario>> registrarUsuario(@RequestBody Usuario usuario) {
         try {
@@ -63,7 +59,6 @@ public class UsuarioController {
         }
     }
 
-    // POST /api/usuarios/login
     @PostMapping("/login")
     public ResponseEntity<EntityModel<Usuario>> login(@RequestBody Map<String, String> credenciales) {
         String email = credenciales.get("email");
@@ -78,7 +73,6 @@ public class UsuarioController {
         }
     }
 
-    // PUT /api/usuarios/{id}
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> actualizarUsuario(@PathVariable String id, @RequestBody Usuario usuario) {
         Usuario usuarioActualizado = usuarioService.update(id, usuario);
@@ -89,7 +83,6 @@ public class UsuarioController {
         }
     }
 
-    // DELETE /api/usuarios/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable String id) {
         if (usuarioService.delete(id)) {

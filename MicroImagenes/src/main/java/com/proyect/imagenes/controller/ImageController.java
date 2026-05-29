@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
@@ -58,6 +57,7 @@ public class ImageController {
         return ResponseEntity.ok(imageAssembler.toModel(image));
     }
     
+    @SuppressWarnings("null")
     @GetMapping("/download/{imageId}")
     @Operation(summary = "Download image file")
     public ResponseEntity<byte[]> downloadImage(@PathVariable String imageId) {
