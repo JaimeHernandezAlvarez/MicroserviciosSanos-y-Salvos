@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,7 +21,7 @@ public class Usuario {
     private String password;
     private String name;
     private String phone;
-    private String role; 
+    private Rol    role = Rol.ROLE_USER;
     private List<String> petsIds;
     private boolean active;
     private String refreshToken;

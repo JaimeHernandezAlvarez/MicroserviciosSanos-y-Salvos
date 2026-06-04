@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.proyect.user.Assembler.UsuarioModelAssembler;
 import com.proyect.user.Model.Usuario;
+import com.proyect.user.Security.JwtUtil;
 import com.proyect.user.Service.UsuarioService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +30,10 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioModelAssembler assembler;
+
+    // NUEVO: Inyectamos nuestra utilidad JWT
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
@@ -60,14 +66,22 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<EntityModel<Usuario>> login(@RequestBody Map<String, String> credenciales) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
         String email = credenciales.get("email");
         String password = credenciales.get("password");
 
         Usuario usuario = usuarioService.login(email, password);
         
         if (usuario != null) {
-            return ResponseEntity.ok(assembler.toModel(usuario));
+            // 1. Generamos el token usando los datos del usuario
+            String token = jwtUtil.generarToken(usuario);
+            
+            // 2. Preparamos una respuesta que incluya el token Y los datos del usuario
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("usuario", assembler.toModel(usuario));
+            
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
