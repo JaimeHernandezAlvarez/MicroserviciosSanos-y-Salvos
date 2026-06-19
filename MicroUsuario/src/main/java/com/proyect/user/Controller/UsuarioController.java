@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.proyect.user.Assembler.UsuarioModelAssembler;
 import com.proyect.user.Model.Usuario;
+import com.proyect.user.Security.JwtUtil;
 import com.proyect.user.Service.UsuarioService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,15 +28,17 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // Inyectamos nuestro nuevo Assembler
     @Autowired
     private UsuarioModelAssembler assembler;
 
-    // GET /api/usuarios
+    // NUEVO: Inyectamos nuestra utilidad JWT
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @GetMapping
     public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
         List<EntityModel<Usuario>> usuariosModel = usuarioService.findAll().stream()
-                .map(assembler::toModel) // <- Usamos el assembler aquí
+                .map(assembler::toModel) 
                 .collect(Collectors.toList());
 
         CollectionModel<EntityModel<Usuario>> collectionModel = CollectionModel.of(usuariosModel,
@@ -43,16 +47,14 @@ public class UsuarioController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    // GET /api/usuarios/{id}
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> obtenerUsuarioPorId(@PathVariable String id) {
         return usuarioService.findById(id)
-                .map(assembler::toModel) // <- Usamos el assembler aquí
+                .map(assembler::toModel) 
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/usuarios/register
     @PostMapping("/register")
     public ResponseEntity<EntityModel<Usuario>> registrarUsuario(@RequestBody Usuario usuario) {
         try {
@@ -63,22 +65,28 @@ public class UsuarioController {
         }
     }
 
-    // POST /api/usuarios/login
     @PostMapping("/login")
-    public ResponseEntity<EntityModel<Usuario>> login(@RequestBody Map<String, String> credenciales) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
         String email = credenciales.get("email");
         String password = credenciales.get("password");
 
         Usuario usuario = usuarioService.login(email, password);
         
         if (usuario != null) {
-            return ResponseEntity.ok(assembler.toModel(usuario));
+            // 1. Generamos el token usando los datos del usuario
+            String token = jwtUtil.generarToken(usuario);
+            
+            // 2. Preparamos una respuesta que incluya el token Y los datos del usuario
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("usuario", assembler.toModel(usuario));
+            
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    // PUT /api/usuarios/{id}
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> actualizarUsuario(@PathVariable String id, @RequestBody Usuario usuario) {
         Usuario usuarioActualizado = usuarioService.update(id, usuario);
@@ -89,7 +97,6 @@ public class UsuarioController {
         }
     }
 
-    // DELETE /api/usuarios/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable String id) {
         if (usuarioService.delete(id)) {

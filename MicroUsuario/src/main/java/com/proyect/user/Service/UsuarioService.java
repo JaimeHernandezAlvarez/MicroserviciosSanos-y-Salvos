@@ -3,6 +3,7 @@ package com.proyect.user.Service;
 import com.proyect.user.Model.Usuario;
 import com.proyect.user.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder; // NUEVO: Importación del encriptador
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // NUEVO: Inyección de la herramienta BCrypt
 
     //Todos los usuarios
     public List<Usuario> findAll() {
@@ -26,8 +30,13 @@ public class UsuarioService {
 
     //Registrar
     public Usuario save(Usuario usuario) {
-        // Por defecto, podemos setear el usuario como activo al registrarse
         usuario.setActive(true);
+        
+        // MODIFICADO: Encriptamos la contraseña antes de mandarla a MongoDB
+        if (usuario.getPassword() != null) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+        
         return usuarioRepository.save(usuario);
     }
 
@@ -37,13 +46,12 @@ public class UsuarioService {
         
         if (usuarioExistente.isPresent()) {
             Usuario usuario = usuarioExistente.get();
-            // Actualizamos solo los campos permitidos
             usuario.setName(usuarioActualizado.getName());
             usuario.setPhone(usuarioActualizado.getPhone());
             usuario.setRole(usuarioActualizado.getRole());
             usuario.setPetsIds(usuarioActualizado.getPetsIds());
             usuario.setActive(usuarioActualizado.isActive());
-            // Guardamos los cambios
+            // Mantengo tu lógica intacta: el update no altera la contraseña
             return usuarioRepository.save(usuario);
         }
         return null;
@@ -61,8 +69,9 @@ public class UsuarioService {
     //Login
     public Usuario login(String email, String password) {
         Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
-        // Validamos si el usuario existe y si la contraseña coincide (Texto plano por ahora)
-        if (usuario.isPresent() && usuario.get().getPassword().equals(password)) {
+        
+        // MODIFICADO: Cambiamos .equals() por .matches() para que compare de forma segura el hash
+        if (usuario.isPresent() && passwordEncoder.matches(password, usuario.get().getPassword())) {
             return usuario.get();
         }
         return null;

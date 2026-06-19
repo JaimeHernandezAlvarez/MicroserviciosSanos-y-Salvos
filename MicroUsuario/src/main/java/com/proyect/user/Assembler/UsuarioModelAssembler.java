@@ -16,7 +16,6 @@ public class UsuarioModelAssembler implements RepresentationModelAssembler<Usuar
 
     @Override
     public EntityModel<Usuario> toModel(Usuario usuario) {
-        // Aquí centralizamos TODOS los links que un usuario debería tener
         return EntityModel.of(usuario,
                 linkTo(methodOn(UsuarioController.class).obtenerUsuarioPorId(usuario.getId())).withSelfRel(),
                 linkTo(methodOn(UsuarioController.class).obtenerUsuarios()).withRel("todos-los-usuarios"),

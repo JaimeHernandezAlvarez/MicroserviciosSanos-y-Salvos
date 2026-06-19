@@ -16,7 +16,7 @@ public class MascotaService {
     @Autowired
     private MascotaRepository mascotaRepository;
 
-    // 1. Crear o reportar una mascota (Por defecto asumimos que se reporta perdida)
+    //crear mascota
     public Mascota save(Mascota mascota) {
         if (mascota.getReportedAt() == null) {
             mascota.setReportedAt(LocalDateTime.now());
@@ -27,17 +27,17 @@ public class MascotaService {
         return mascotaRepository.save(mascota);
     }
 
-    // 2. Obtener todas las mascotas
+    //todos
     public List<Mascota> findAll() {
         return mascotaRepository.findAll();
     }
 
-    // 3. Obtener una mascota por su ID
+    //obtener por id
     public Optional<Mascota> findById(String id) {
         return mascotaRepository.findById(id);
     }
 
-    // 4. Actualizar información general de la mascota
+    //actualizar
     public Mascota update(String id, Mascota mascotaDetails) {
         return mascotaRepository.findById(id).map(mascotaExistente -> {
             mascotaExistente.setName(mascotaDetails.getName());
@@ -53,7 +53,7 @@ public class MascotaService {
         }).orElse(null); // Retorna null si no encontró la mascota
     }
 
-    // 5. Método especial para actualizar solo el ESTADO (LOST -> FOUND -> REUNITED)
+    //actualizar estado (LOST, FOUND, REUNITED)
     public Mascota updateStatus(String id, String newStatus, String founderId) {
         return mascotaRepository.findById(id).map(mascota -> {
             mascota.setStatus(newStatus.toUpperCase());
@@ -72,7 +72,7 @@ public class MascotaService {
         }).orElse(null);
     }
 
-    // 6. Eliminar mascota del registro
+    //eliminar
     public boolean delete(String id) {
         return mascotaRepository.findById(id).map(mascota -> {
             mascotaRepository.delete(mascota);
