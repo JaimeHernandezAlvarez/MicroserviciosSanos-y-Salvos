@@ -46,7 +46,6 @@ public class UsuarioService implements UserDetailsService {
             usuario.setPhone(usuarioActualizado.getPhone());
             usuario.setRole(usuarioActualizado.getRole());
             usuario.setPetsIds(usuarioActualizado.getPetsIds());
-            // ✅ CORREGIDO: isActive() → getActive() (para Boolean)
             usuario.setActive(usuarioActualizado.getActive());
             return usuarioRepository.save(usuario);
         }
