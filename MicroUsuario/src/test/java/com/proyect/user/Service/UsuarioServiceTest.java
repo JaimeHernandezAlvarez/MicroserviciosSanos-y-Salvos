@@ -80,7 +80,7 @@ public class UsuarioServiceTest {
         Usuario resultado = usuarioService.save(usuarioParaGuardar);
 
         // 4. Verificamos que tu lógica de negocio funcionó perfectamente
-        assertTrue(resultado.isActive(), "El usuario debería nacer activo por defecto");
+        assertTrue(resultado.getActive(), "El usuario debería nacer activo por defecto");
         assertEquals("claveEncriptada123", resultado.getPassword(), "La contraseña debió ser encriptada antes de guardar");
         
         // Verificamos que efectivamente se llamó al método save del repositorio 1 vez
