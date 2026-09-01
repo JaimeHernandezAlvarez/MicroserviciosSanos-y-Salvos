@@ -4,7 +4,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
-import com.proyect.user.Controller.UsuarioController;
+import com.proyect.user.Controller.AuthController;
 import com.proyect.user.Model.Usuario;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -17,10 +17,8 @@ public class UsuarioModelAssembler implements RepresentationModelAssembler<Usuar
     @Override
     public EntityModel<Usuario> toModel(Usuario usuario) {
         return EntityModel.of(usuario,
-                linkTo(methodOn(UsuarioController.class).obtenerUsuarioPorId(usuario.getId())).withSelfRel(),
-                linkTo(methodOn(UsuarioController.class).obtenerUsuarios()).withRel("todos-los-usuarios"),
-                linkTo(methodOn(UsuarioController.class).actualizarUsuario(usuario.getId(), null)).withRel("actualizar-usuario"),
-                linkTo(methodOn(UsuarioController.class).eliminarUsuario(usuario.getId())).withRel("eliminar-usuario")
+                linkTo(methodOn(AuthController.class).login(null)).withRel("login"),
+                linkTo(methodOn(AuthController.class).refreshToken(null)).withRel("refresh")
         );
     }
 }
