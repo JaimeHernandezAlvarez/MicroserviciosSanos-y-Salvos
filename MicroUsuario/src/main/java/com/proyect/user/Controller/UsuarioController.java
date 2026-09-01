@@ -19,7 +19,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@SuppressWarnings("null")
 public class UsuarioController {
 
     @Autowired

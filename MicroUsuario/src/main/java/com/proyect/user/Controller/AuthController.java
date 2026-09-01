@@ -11,23 +11,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/usuarios")
-@SuppressWarnings("null")
+@RequestMapping("/api/auth") // Ruta base para autenticación
 public class AuthController {
 
     @Autowired
@@ -38,8 +37,6 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    // ==================== AUTENTICACIÓN ====================
 
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario y genera tokens JWT")
@@ -128,70 +125,6 @@ public class AuthController {
             ));
         }
     }
-
-    // ==================== CRUD DE USUARIOS ====================
-
-    @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @Operation(summary = "Listar usuarios", description = "Retorna todos los usuarios. Solo administradores.")
-    public ResponseEntity<List<Usuario>> obtenerTodos() {
-        List<Usuario> usuarios = usuarioService.findAll();
-        return ResponseEntity.ok(usuarios);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Obtener usuario por ID", description = "Retorna un usuario por su ID")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable String id) {
-        return usuarioService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/register")
-    @Operation(summary = "Registrar usuario", description = "Crea un nuevo usuario en el sistema")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
-        @ApiResponse(responseCode = "409", description = "El email ya está registrado")
-    })
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        try {
-            Usuario nuevoUsuario = usuarioService.save(usuario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    public ResponseEntity<Usuario> actualizar(@PathVariable String id, @RequestBody Usuario usuario) {
-        Usuario usuarioActualizado = usuarioService.update(id, usuario);
-        if (usuarioActualizado != null) {
-            return ResponseEntity.ok(usuarioActualizado);
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario del sistema. Solo administradores.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Usuario eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
-        @ApiResponse(responseCode = "403", description = "No tienes permisos para eliminar usuarios")
-    })
-    public ResponseEntity<Void> eliminar(@PathVariable String id) {
-        if (usuarioService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    // ==================== MÉTODO AUXILIAR ====================
 
     private UsuarioResponseDTO mapToDTO(Usuario usuario) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
