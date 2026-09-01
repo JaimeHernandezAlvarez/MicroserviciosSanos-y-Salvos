@@ -11,22 +11,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/usuarios")
+@SuppressWarnings("null")
 public class AuthController {
 
     @Autowired
@@ -38,9 +39,8 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    /**
-     * Endpoint para iniciar sesión
-     */
+    // ==================== AUTENTICACIÓN ====================
+
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario y genera tokens JWT")
     @ApiResponses(value = {
@@ -49,7 +49,6 @@ public class AuthController {
     })
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            // 1. Autenticar al usuario
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     loginRequest.getEmail(),
@@ -59,7 +58,6 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 2. Obtener el usuario
             Usuario usuario = usuarioService.findByEmail(loginRequest.getEmail());
             if (usuario == null) {
                 return ResponseEntity.status(401).body(Map.of(
@@ -67,11 +65,9 @@ public class AuthController {
                 ));
             }
 
-            // 3. Generar tokens
             String token = jwtUtil.generarToken(usuario);
             String refreshToken = jwtUtil.generarRefreshToken(usuario);
 
-            // 4. Mapear a DTO
             UsuarioResponseDTO userDTO = mapToDTO(usuario);
             AuthResponseDTO response = new AuthResponseDTO(userDTO, token, refreshToken);
 
@@ -85,9 +81,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Endpoint para refrescar el token
-     */
     @PostMapping("/refresh")
     @Operation(summary = "Refrescar token", description = "Obtiene un nuevo token usando el refresh token")
     @ApiResponses(value = {
@@ -97,7 +90,6 @@ public class AuthController {
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequestDTO request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1. Validar el refresh token
         if (refreshToken == null || refreshToken.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of(
                 "error", "Refresh token requerido"
@@ -105,17 +97,14 @@ public class AuthController {
         }
 
         try {
-            // 2. Verificar que el refresh token sea válido
             if (!jwtUtil.validarToken(refreshToken)) {
                 return ResponseEntity.status(401).body(Map.of(
                     "error", "Refresh token inválido"
                 ));
             }
 
-            // 3. Extraer el email del refresh token
             String email = jwtUtil.extraerEmail(refreshToken);
             
-            // 4. Buscar el usuario
             Usuario usuario = usuarioService.findByEmail(email);
             if (usuario == null) {
                 return ResponseEntity.status(401).body(Map.of(
@@ -123,11 +112,9 @@ public class AuthController {
                 ));
             }
 
-            // 5. Generar nuevos tokens
             String newToken = jwtUtil.generarToken(usuario);
             String newRefreshToken = jwtUtil.generarRefreshToken(usuario);
 
-            // 6. Construir respuesta
             Map<String, String> response = new HashMap<>();
             response.put("token", newToken);
             response.put("refreshToken", newRefreshToken);
@@ -142,9 +129,70 @@ public class AuthController {
         }
     }
 
-    /**
-     * Mapea un Usuario a UsuarioResponseDTO
-     */
+    // ==================== CRUD DE USUARIOS ====================
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Listar usuarios", description = "Retorna todos los usuarios. Solo administradores.")
+    public ResponseEntity<List<Usuario>> obtenerTodos() {
+        List<Usuario> usuarios = usuarioService.findAll();
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener usuario por ID", description = "Retorna un usuario por su ID")
+    public ResponseEntity<Usuario> obtenerPorId(@PathVariable String id) {
+        return usuarioService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Registrar usuario", description = "Crea un nuevo usuario en el sistema")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
+        @ApiResponse(responseCode = "409", description = "El email ya está registrado")
+    })
+    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
+        try {
+            Usuario nuevoUsuario = usuarioService.save(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    public ResponseEntity<Usuario> actualizar(@PathVariable String id, @RequestBody Usuario usuario) {
+        Usuario usuarioActualizado = usuarioService.update(id, usuario);
+        if (usuarioActualizado != null) {
+            return ResponseEntity.ok(usuarioActualizado);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario del sistema. Solo administradores.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Usuario eliminado exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No tienes permisos para eliminar usuarios")
+    })
+    public ResponseEntity<Void> eliminar(@PathVariable String id) {
+        if (usuarioService.delete(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // ==================== MÉTODO AUXILIAR ====================
+
     private UsuarioResponseDTO mapToDTO(Usuario usuario) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(usuario.getId());

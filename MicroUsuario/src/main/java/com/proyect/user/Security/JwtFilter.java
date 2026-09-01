@@ -47,7 +47,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestPath = request.getRequestURI();
         String method = request.getMethod();
 
-        // Log de la petición
         logger.debug("Procesando petición: {} {}", method, requestPath);
 
         // 1. Verificar si la ruta es pública
@@ -77,7 +76,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 // 4. Extraer información del token
                 String email = jwtUtil.extraerEmail(token);
                 String rol = jwtUtil.extraerRol(token);
-                Long id = jwtUtil.extraerId(token);
+                // ✅ CORREGIDO: extraerId() devuelve String
+                String id = jwtUtil.extraerId(token);
 
                 logger.info("Token válido para usuario: {} con rol: {} y id: {}", email, rol, id);
 

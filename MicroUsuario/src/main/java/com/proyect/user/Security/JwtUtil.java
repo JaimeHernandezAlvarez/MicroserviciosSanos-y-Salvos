@@ -40,8 +40,9 @@ public class JwtUtil {
      */
     public String generarToken(Usuario usuario) {
         Map<String, Object> claims = new HashMap<>();
+        // ✅ El ID se guarda como String (porque MongoDB usa String)
         claims.put("rol", usuario.getRole().name());
-        claims.put("id", usuario.getId());
+        claims.put("id", usuario.getId()); // ← ID como String
         claims.put("email", usuario.getEmail());
 
         return Jwts.builder()
@@ -113,12 +114,13 @@ public class JwtUtil {
 
     /**
      * Obtiene el ID del usuario del token.
+     * ✅ CORREGIDO: Ahora devuelve String (para MongoDB)
      * 
      * @param token Token JWT
-     * @return ID del usuario
+     * @return ID del usuario (String)
      */
-    public Long extraerId(String token) {
-        return extraerClaims(token).get("id", Long.class);
+    public String extraerId(String token) {
+        return extraerClaims(token).get("id", String.class); // ← String.class
     }
 
     /**

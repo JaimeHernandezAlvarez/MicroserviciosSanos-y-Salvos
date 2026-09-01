@@ -3,13 +3,13 @@ package com.proyect.user.DTO;
 import java.util.List;
 
 public class UsuarioResponseDTO {
-    private String id;  // ← CAMBIADO a String
+    private String id;  
     private String email;
     private String name;
     private String phone;
     private String role;
     private Boolean active;
-    private List<String> petsIds;  // ← CAMBIADO a List<String>
+    private List<String> petsIds;
 
     // Constructores
     public UsuarioResponseDTO() {}
