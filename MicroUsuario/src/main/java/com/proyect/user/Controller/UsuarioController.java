@@ -1,20 +1,17 @@
 package com.proyect.user.Controller;
 
+import com.proyect.user.Assembler.UsuarioModelAssembler;
+import com.proyect.user.Model.Usuario;
+import com.proyect.user.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.proyect.user.Assembler.UsuarioModelAssembler;
-import com.proyect.user.Model.Usuario;
-import com.proyect.user.Security.JwtUtil;
-import com.proyect.user.Service.UsuarioService;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -31,11 +28,8 @@ public class UsuarioController {
     @Autowired
     private UsuarioModelAssembler assembler;
 
-    // NUEVO: Inyectamos nuestra utilidad JWT
-    @Autowired
-    private JwtUtil jwtUtil;
-
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
         List<EntityModel<Usuario>> usuariosModel = usuarioService.findAll().stream()
                 .map(assembler::toModel) 
@@ -65,28 +59,6 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
-        String email = credenciales.get("email");
-        String password = credenciales.get("password");
-
-        Usuario usuario = usuarioService.login(email, password);
-        
-        if (usuario != null) {
-            // 1. Generamos el token usando los datos del usuario
-            String token = jwtUtil.generarToken(usuario);
-            
-            // 2. Preparamos una respuesta que incluya el token Y los datos del usuario
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("usuario", assembler.toModel(usuario));
-            
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> actualizarUsuario(@PathVariable String id, @RequestBody Usuario usuario) {
         Usuario usuarioActualizado = usuarioService.update(id, usuario);
@@ -98,6 +70,7 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable String id) {
         if (usuarioService.delete(id)) {
             return ResponseEntity.noContent().build();

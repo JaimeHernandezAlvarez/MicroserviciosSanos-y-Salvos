@@ -1,9 +1,11 @@
 package com.proyect.user.Security;
 
 import com.proyect.user.Model.Usuario;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -14,59 +16,151 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    // Llave secreta para firmar el token (¡En producción esto debe ir en tu .env!)
-    // Debe ser un string largo y seguro.
-    private final String SECRET_KEY = "SanosYSalvos_ClaveSecreta_SuperSegura_Para_JWT_2026_Backend";
-    
-    // Tiempo de expiración del token: 1 día (en milisegundos)
-    private final long EXPIRATION_TIME = 86400000;
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+
+    @Value("${jwt.secret:SanosYSalvos_ClaveSecreta_SuperSegura_Para_JWT_2026_Backend}")
+    private String secretKey;
+
+    @Value("${jwt.expiration:86400000}") // 24 horas en milisegundos
+    private long expirationTime;
+
+    @Value("${jwt.refresh-expiration:604800000}") // 7 días en milisegundos
+    private long refreshExpirationTime;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
+    /**
+     * Genera un token JWT de acceso para el usuario.
+     * Incluye email, rol e ID del usuario en los claims.
+     * 
+     * @param usuario Usuario autenticado
+     * @return Token JWT firmado
+     */
     public String generarToken(Usuario usuario) {
         Map<String, Object> claims = new HashMap<>();
-        // Guardamos el rol y el ID dentro del token para que los otros microservicios lo puedan leer
         claims.put("rol", usuario.getRole().name());
         claims.put("id", usuario.getId());
+        claims.put("email", usuario.getEmail());
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(usuario.getEmail()) // El "sujeto" del token es el email
+                .setSubject(usuario.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    // ... código anterior (SECRET_KEY, getSigningKey, generarToken) ...
 
-    // 1. Extraer todos los datos (Claims) del token
-    private io.jsonwebtoken.Claims extraerClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    /**
+     * Genera un refresh token con mayor duración.
+     * 
+     * @param usuario Usuario autenticado
+     * @return Refresh token JWT firmado
+     */
+    public String generarRefreshToken(Usuario usuario) {
+        return Jwts.builder()
+                .setSubject(usuario.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationTime))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    // 2. Obtener el email del token
+    /**
+     * Extrae todos los claims del token.
+     * 
+     * @param token Token JWT
+     * @return Claims del token
+     * @throws JwtException Si el token es inválido o expirado
+     */
+    private Claims extraerClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            logger.warn("Token expirado: {}", e.getMessage());
+            throw e;
+        } catch (JwtException e) {
+            logger.error("Token inválido: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Obtiene el email del token.
+     * 
+     * @param token Token JWT
+     * @return Email del usuario
+     */
     public String extraerEmail(String token) {
         return extraerClaims(token).getSubject();
     }
 
-    // 3. Obtener el rol del token
+    /**
+     * Obtiene el rol del token.
+     * 
+     * @param token Token JWT
+     * @return Rol del usuario
+     */
     public String extraerRol(String token) {
         return extraerClaims(token).get("rol", String.class);
     }
 
-    // 4. Validar si el token es legítimo y no ha expirado
-    public boolean validarToken(String token) {
+    /**
+     * Obtiene el ID del usuario del token.
+     * 
+     * @param token Token JWT
+     * @return ID del usuario
+     */
+    public Long extraerId(String token) {
+        return extraerClaims(token).get("id", Long.class);
+    }
+
+    /**
+     * Verifica si el token ha expirado.
+     * 
+     * @param token Token JWT
+     * @return true si el token ha expirado, false en caso contrario
+     */
+    public Boolean isTokenExpired(String token) {
+        try {
+            Date expiration = extraerClaims(token).getExpiration();
+            return expiration.before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+    }
+
+    /**
+     * Valida el token comprobando la firma y la expiración.
+     * 
+     * @param token Token JWT
+     * @return true si el token es válido, false en caso contrario
+     */
+    public Boolean validarToken(String token) {
         try {
             extraerClaims(token);
             return true;
-        } catch (Exception e) {
-            return false; // Si cae aquí, el token fue alterado, expiró o es inválido
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Token inválido: {}", e.getMessage());
+            return false;
         }
+    }
+
+    /**
+     * Valida que el token pertenezca al usuario específico.
+     * 
+     * @param token Token JWT
+     * @param usuario Usuario a validar
+     * @return true si el token pertenece al usuario y no ha expirado
+     */
+    public Boolean validarTokenParaUsuario(String token, Usuario usuario) {
+        String email = extraerEmail(token);
+        return (email.equals(usuario.getEmail()) && !isTokenExpired(token));
     }
 }
