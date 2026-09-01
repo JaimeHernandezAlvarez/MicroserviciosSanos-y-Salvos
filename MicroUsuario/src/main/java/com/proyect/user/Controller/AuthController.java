@@ -188,7 +188,7 @@ public class AuthController {
         if (usuarioService.delete(id)) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build();  // ✅ Siempre retorna algo
+        return ResponseEntity.notFound().build();
     }
 
     // ==================== MÉTODO AUXILIAR ====================
