@@ -76,7 +76,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 // 4. Extraer información del token
                 String email = jwtUtil.extraerEmail(token);
                 String rol = jwtUtil.extraerRol(token);
-                // ✅ CORREGIDO: extraerId() devuelve String
                 String id = jwtUtil.extraerId(token);
 
                 logger.info("Token válido para usuario: {} con rol: {} y id: {}", email, rol, id);
