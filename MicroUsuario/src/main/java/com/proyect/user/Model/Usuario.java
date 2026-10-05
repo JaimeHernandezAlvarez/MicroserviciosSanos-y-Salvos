@@ -24,10 +24,9 @@ public class Usuario {
     private String phone;
     private Rol role = Rol.ROLE_USER;
     private List<String> petsIds;
-    private Boolean active = true;  // ✅ CAMBIADO de boolean a Boolean
+    private Boolean active = true;
     private String refreshToken;
 
-    // ✅ GETTER Y SETTER MANUALES (por si Lombok no funciona)
     public String getId() {
         return id;
     }
@@ -84,7 +83,6 @@ public class Usuario {
         this.petsIds = petsIds;
     }
 
-    // ✅ Getter y Setter para active (usa Boolean)
     public Boolean getActive() {
         return active;
     }

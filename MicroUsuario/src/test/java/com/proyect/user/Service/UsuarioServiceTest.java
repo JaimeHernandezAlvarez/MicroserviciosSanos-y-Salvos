@@ -72,7 +72,7 @@ public class UsuarioServiceTest {
 
         Usuario resultado = usuarioService.save(usuarioParaGuardar);
 
-        // ✅ CORREGIDO: isActive() → getActive() (para Boolean)
+        // 4. Verificamos que tu lógica de negocio funcionó perfectamente
         assertTrue(resultado.getActive(), "El usuario debería nacer activo por defecto");
         assertEquals("claveEncriptada123", resultado.getPassword(), "La contraseña debió ser encriptada antes de guardar");
         
