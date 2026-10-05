@@ -60,6 +60,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- AMQP para CloudAMQP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- OpenAPI / Swagger UI (compatible con Boot 3) -->
         <dependency>
             <groupId>org.springdoc</groupId>
