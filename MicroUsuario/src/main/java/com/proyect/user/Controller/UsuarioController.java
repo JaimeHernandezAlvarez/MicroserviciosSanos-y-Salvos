@@ -1,6 +1,7 @@
 package com.proyect.user.Controller;
 
 import com.proyect.user.Assembler.UsuarioModelAssembler;
+import com.proyect.user.DTO.UsuarioResponseDTO;
 import com.proyect.user.Model.Usuario;
 import com.proyect.user.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
         List<EntityModel<Usuario>> usuariosModel = usuarioService.findAll().stream()
-                .map(assembler::toModel) 
+                .map(assembler::toModel)
                 .collect(Collectors.toList());
 
         CollectionModel<EntityModel<Usuario>> collectionModel = CollectionModel.of(usuariosModel,
@@ -43,8 +44,24 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> obtenerUsuarioPorId(@PathVariable String id) {
         return usuarioService.findById(id)
-                .map(assembler::toModel) 
+                .map(assembler::toModel)
                 .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/internal")
+    public ResponseEntity<UsuarioResponseDTO> obtenerUsuarioInterno(@PathVariable String id) {
+        return usuarioService.findById(id)
+                .map(usuario -> {
+                    UsuarioResponseDTO dto = new UsuarioResponseDTO();
+                    dto.setId(usuario.getId());
+                    dto.setEmail(usuario.getEmail());
+                    dto.setName(usuario.getName());
+                    dto.setPhone(usuario.getPhone());
+                    dto.setRole(usuario.getRole() != null ? usuario.getRole().name() : null);
+                    dto.setActive(usuario.getActive());
+                    return ResponseEntity.ok(dto);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 

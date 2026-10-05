@@ -1,7 +1,10 @@
 package com.proyect.pet.Service;
 
+import com.proyect.pet.Config.RabbitMQConfig;
+import com.proyect.pet.Dto.MascotaEncontradaEvent;
 import com.proyect.pet.Model.Mascota;
 import com.proyect.pet.Repository.MascotaRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,9 @@ public class MascotaService {
 
     @Autowired
     private MascotaRepository mascotaRepository;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     //crear mascota
     public Mascota save(Mascota mascota) {
@@ -47,17 +53,17 @@ public class MascotaService {
             mascotaExistente.setSize(mascotaDetails.getSize());
             mascotaExistente.setDescription(mascotaDetails.getDescription());
             mascotaExistente.setImageId(mascotaDetails.getImageId());
-            mascotaExistente.setLastLocation(mascotaDetails.getLastLocation()); // Aquí actualizamos la ubicación
-            
+            mascotaExistente.setLastLocation(mascotaDetails.getLastLocation());
+
             return mascotaRepository.save(mascotaExistente);
-        }).orElse(null); // Retorna null si no encontró la mascota
+        }).orElse(null);
     }
 
     //actualizar estado (LOST, FOUND, REUNITED)
     public Mascota updateStatus(String id, String newStatus, String founderId) {
         return mascotaRepository.findById(id).map(mascota -> {
             mascota.setStatus(newStatus.toUpperCase());
-            
+
             // Lógica de negocio: Asignar fechas automáticamente según el nuevo estado
             if ("FOUND".equalsIgnoreCase(newStatus)) {
                 mascota.setFoundAt(LocalDateTime.now());
@@ -67,8 +73,28 @@ public class MascotaService {
             } else if ("REUNITED".equalsIgnoreCase(newStatus)) {
                 mascota.setReunitedAt(LocalDateTime.now());
             }
-            
-            return mascotaRepository.save(mascota);
+
+            Mascota guardada = mascotaRepository.save(mascota);
+
+            // Publicar evento en CloudAMQP cuando la mascota sea ENCONTRADA
+            if ("FOUND".equalsIgnoreCase(newStatus)) {
+                MascotaEncontradaEvent evento = new MascotaEncontradaEvent(
+                    guardada.getId(),
+                    guardada.getOwnerId(),
+                    guardada.getFounderId(),
+                    guardada.getStatus()
+                );
+
+                rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE_NAME,
+                    "mascota.evento.encontrada",
+                    evento
+                );
+
+                System.out.println("📤 Evento publicado a CloudAMQP: " + evento);
+            }
+
+            return guardada;
         }).orElse(null);
     }
 

@@ -30,7 +30,7 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
 
     @Autowired
-    private CustomAuthenticationEntryPoint authenticationEntryPoint; // ← ESTA CLASE
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,13 +39,14 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(authenticationEntryPoint) // ← SE USA AQUÍ
+                .authenticationEntryPoint(authenticationEntryPoint)
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/api/usuarios/register").permitAll()
+                .requestMatchers("/api/usuarios/*/internal").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
