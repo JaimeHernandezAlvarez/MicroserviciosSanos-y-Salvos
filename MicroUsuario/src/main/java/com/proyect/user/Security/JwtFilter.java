@@ -113,6 +113,10 @@ public class JwtFilter extends OncePerRequestFilter {
      * Verifica si la ruta es pública.
      */
     private boolean isPublicPath(String path) {
+        //NUEVO: permitir el endpoint interno de usuarios
+        if (path.matches("/api/usuarios/[^/]+/internal")) {
+            return true;
+        }
         return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
