@@ -1,20 +1,20 @@
-#build
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Etapa de compilación
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /app
 
-#dependencias
+# Instalar maven si el alpine no lo trae (o puedes usar la distro standard de debian si prefieres)
+RUN apk add --no-cache maven
+
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-#compilación
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-#run
-FROM eclipse-temurin:17-jre-alpine
+# Etapa de ejecución
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
-#jar
 COPY --from=build /app/target/*.jar app.jar
 
 #port
