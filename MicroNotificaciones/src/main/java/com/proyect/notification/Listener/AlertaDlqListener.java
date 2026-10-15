@@ -3,6 +3,7 @@ package com.proyect.notification.Listener;
 import com.proyect.notification.Config.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,10 @@ public class AlertaDlqListener {
     private static final Logger log = LoggerFactory.getLogger(AlertaDlqListener.class);
 
     @RabbitListener(queues = RabbitMQConfig.DLQ_QUEUE)
-    public void alertarMensajeFallido(String mensaje) {
+    public void alertarMensajeFallido(Message message) {
+        String contenido = new String(message.getBody());
         log.error("ALERTA: Mensaje fallido en DLQ");
-        log.error("   Contenido: {}", mensaje);
+        log.error("   Contenido: {}", contenido);
         log.error("   Accion requerida: revisar MicroNotificaciones");
         log.error("   Timestamp: {}", LocalDateTime.now());
     }
