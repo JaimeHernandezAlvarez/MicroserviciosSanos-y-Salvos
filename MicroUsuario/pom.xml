@@ -24,6 +24,8 @@
         <jjwt.version>0.11.5</jjwt.version>
         <springdoc.version>2.2.0</springdoc.version>
         <lombok.version>1.18.40</lombok.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
     </properties>
 
     <dependencies>
