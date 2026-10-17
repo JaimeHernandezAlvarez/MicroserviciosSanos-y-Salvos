@@ -1,2 +1,64 @@
-### MONGO DB ###
+# ================================
+# Secretos y variables de entorno
+# ================================
 .env
+*.env
+*.env.local
+*.env.*.local
+
+# ================================
+# Archivos de configuración con credenciales
+# ================================
+application-local.properties
+application-secret.properties
+application-prod.properties
+
+# ================================
+# Logs de JVM (crash reports de Java)
+# ================================
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+
+# ================================
+# Logs generales
+# ================================
+*.log
+logs/
+log/
+
+# ================================
+# Configuración de IDE en la raíz
+# ================================
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ================================
+# Sistema operativo
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# Build / Target (por si algún micro no lo tiene)
+# ================================
+target/
+build/
+*.class
+*.jar
+*.war
+
+# ================================
+# Node (por si acaso algún día lo necesitas)
+# ================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

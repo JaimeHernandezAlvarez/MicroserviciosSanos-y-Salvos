@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Appender de Logtail/Better Stack -->
+    <appender name="Logtail" class="com.logtail.logback.LogtailAppender">
+        <appName>springboot-render-notif</appName>
+        <!-- Lee directamente la variable de entorno del sistema/Render -->
+        <sourceToken>${LOGTAIL_SOURCE_TOKEN}</sourceToken>
+        <ingestUrl>${INGEST_URL}</ingestUrl>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="Logtail" />
+    </root>
+</configuration>
