@@ -8,6 +8,7 @@
         <appName>springboot-render-notif</appName>
         <!-- Lee directamente la variable de entorno del sistema/Render -->
         <sourceToken>${LOGTAIL_SOURCE_TOKEN}</sourceToken>
+        <ingestUrl>https://s2800273.us-west-2a.betterstackdata.com</ingestUrl>
     </appender>
 
     <root level="INFO">
