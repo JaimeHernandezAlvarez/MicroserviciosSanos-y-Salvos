@@ -13,7 +13,8 @@ public class AlertaDlqListener {
 
     private static final Logger log = LoggerFactory.getLogger(AlertaDlqListener.class);
 
-    @RabbitListener(queues = RabbitMQConfig.DLQ_QUEUE)
+    //Usamos el containerFactory exclusivo de la DLQ
+    @RabbitListener(queues = RabbitMQConfig.DLQ_QUEUE, containerFactory = "dlqContainerFactory")
     public void alertarMensajeFallido(byte[] body) {
         String contenido = new String(body);
         log.error("ALERTA: Mensaje fallido en DLQ");
