@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Inyecta la propiedad definida en application.properties -->
+    <springProperty scope="context" name="LOGTAIL_TOKEN" source="betterstack.token"/>
+
+    <!-- Appender de Logtail/Better Stack -->
+    <appender name="Logtail" class="com.logtail.logback.LogtailAppender">
+        <appName>mi-app-springboot</appName>
+        <sourceToken>${LOGTAIL_TOKEN}</sourceToken>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="Logtail" />
+    </root>
+</configuration>
