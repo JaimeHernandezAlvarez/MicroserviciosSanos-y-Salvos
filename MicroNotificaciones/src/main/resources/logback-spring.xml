@@ -3,13 +3,11 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <!-- Inyecta la propiedad definida en application.properties -->
-    <springProperty scope="context" name="LOGTAIL_TOKEN" source="betterstack.token"/>
-
     <!-- Appender de Logtail/Better Stack -->
     <appender name="Logtail" class="com.logtail.logback.LogtailAppender">
-        <appName>mi-app-springboot</appName>
-        <sourceToken>${LOGTAIL_TOKEN}</sourceToken>
+        <appName>springboot-render-notif</appName>
+        <!-- Lee directamente la variable de entorno del sistema/Render -->
+        <sourceToken>${LOGTAIL_SOURCE_TOKEN}</sourceToken>
     </appender>
 
     <root level="INFO">
