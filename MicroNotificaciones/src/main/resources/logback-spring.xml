@@ -7,7 +7,8 @@
     <appender name="Logtail" class="com.logtail.logback.LogtailAppender">
         <appName>springboot-render-notif</appName>
         <!-- Lee directamente la variable de entorno del sistema/Render -->
-        <sourceToken>EST4C9vpAHGpyCZUpvNBdiBA</sourceToken>
+        <sourceToken>${LOGTAIL_SOURCE_TOKEN}</sourceToken>
+        <ingestUrl>${INGEST_URL}</ingestUrl>
     </appender>
 
     <root level="INFO">
