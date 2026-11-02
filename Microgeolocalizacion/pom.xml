@@ -30,6 +30,13 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
+		<!-- LogTail -->
+		<dependency>
+            <groupId>com.logtail</groupId>
+            <artifactId>logback-logtail</artifactId>
+            <version>0.4.0</version>
+        </dependency>
+
 		<!-- Web (incluye MVC) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
