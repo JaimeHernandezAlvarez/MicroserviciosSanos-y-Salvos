@@ -6,6 +6,7 @@ import com.proyect.notification.Dto.MascotaEncontradaEvent;
 import com.proyect.notification.Dto.UsuarioResponseDTO;
 import com.proyect.notification.Model.Notificacion;
 import com.proyect.notification.Repository.NotificacionRepository;
+import com.proyect.notification.Service.KafkaProducerService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,9 @@ public class NotificacionListener {
     @Autowired
     private NotificacionRepository notificacionRepository;
 
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NOTIFICACIONES)
     public void procesarMascotaEncontrada(
             MascotaEncontradaEvent evento,
@@ -52,7 +56,7 @@ public class NotificacionListener {
 
             log.info("Datos del dueno: {} <{}>", dueno.getName(), dueno.getEmail());
 
-            // 2. Guardar notificacion (ASINCRONO)
+            // 2. Guardar notificacion en MongoDB (ASINCRONO)
             Notificacion notificacion = new Notificacion();
             notificacion.setUserId(evento.getOwnerId());
             notificacion.setTitle("Tu mascota fue encontrada");
@@ -64,7 +68,10 @@ public class NotificacionListener {
 
             notificacionRepository.save(notificacion);
 
-            // 3. ACK EXPLICITO
+            // 3. Enviar evento a Kafka (Aiven) para el flujo de Streaming
+            kafkaProducerService.enviarEvento("Notificación guardada para mascota: " + evento.getMascotaId());
+
+            // 4. ACK EXPLICITO a RabbitMQ
             channel.basicAck(deliveryTag, false);
             log.info("Notificacion guardada y ACK enviado - DeliveryTag: {}", deliveryTag);
 
