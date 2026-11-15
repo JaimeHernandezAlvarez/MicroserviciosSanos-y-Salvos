@@ -68,8 +68,14 @@ public class NotificacionListener {
 
             notificacionRepository.save(notificacion);
 
-            // 3. Enviar evento a Kafka (Aiven) para el flujo de Streaming
-            kafkaProducerService.enviarEvento("Notificación guardada para mascota: " + evento.getMascotaId());
+            // 3. ENVIAR EVENTO ESTRUCTURADO (JSON) A KAFKA
+            String jsonMensaje = String.format(
+                "{\"evento\":\"MASCOTA_ENCONTRADA\", \"mascotaId\":\"%s\", \"dueno\":\"%s\", \"email\":\"%s\"}", 
+                evento.getMascotaId(), 
+                dueno.getName(), 
+                dueno.getEmail()
+            );
+            kafkaProducerService.enviarEvento(jsonMensaje);
 
             // 4. ACK EXPLICITO a RabbitMQ
             channel.basicAck(deliveryTag, false);
