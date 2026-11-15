@@ -17,7 +17,7 @@ public class KafkaConsumerListener {
 
     @KafkaListener(topics = "notificaciones-stream", groupId = "notificaciones-group")
     public void consumirEvento(String mensaje) {
-        String hora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String hora = LocalDateTime.now(java.time.ZoneId.of("America/Santiago")).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String logMessage = "[" + hora + "] " + mensaje;
         
         System.out.println(" Kafka (Aiven) - Mensaje recibido: " + logMessage);
