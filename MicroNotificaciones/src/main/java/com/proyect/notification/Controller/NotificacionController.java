@@ -37,13 +37,13 @@ public class NotificacionController {
                 .map(assembler::toModel)
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(notificaciones, 
+        return CollectionModel.of(notificaciones,
                 linkTo(methodOn(NotificacionController.class).listarTodas()).withSelfRel());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Notificacion>> obtenerPorId(@PathVariable String id) {
-        return notificacionService.obtenerPorId(id) // <-- El punto y el método son la clave aquí
+        return notificacionService.obtenerPorId(id)
                 .map(assembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -56,7 +56,7 @@ public class NotificacionController {
                 .map(assembler::toModel)
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(notificaciones, 
+        return CollectionModel.of(notificaciones,
                 linkTo(methodOn(NotificacionController.class).listarPorUsuario(userId)).withSelfRel());
     }
 
@@ -71,7 +71,8 @@ public class NotificacionController {
                 linkTo(methodOn(NotificacionController.class).listarNoLeidas(userId)).withSelfRel());
     }
 
-    @GetMapping("/user/{userid}/cuenta")
+    //CAMBIADO: /cuenta → /unread/count (coincide con el front)
+    @GetMapping("/user/{userid}/unread/count")
     public ResponseEntity<Long> obtenerContadorNoLeidas(@PathVariable("userid") String userId) {
         long cuenta = notificacionService.contarNotificacionesNoLeidas(userId);
         return ResponseEntity.ok(cuenta);

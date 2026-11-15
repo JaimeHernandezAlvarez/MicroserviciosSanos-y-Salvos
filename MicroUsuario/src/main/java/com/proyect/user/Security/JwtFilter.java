@@ -27,7 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     /**
-     * Rutas que no requieren autenticación.
+     * Rutas que no requieren autenticacion.
      */
     private static final List<String> PUBLIC_PATHS = List.of(
         "/api/auth/login",
@@ -39,19 +39,19 @@ public class JwtFilter extends OncePerRequestFilter {
     );
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                   HttpServletResponse response,
                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         String requestPath = request.getRequestURI();
         String method = request.getMethod();
 
-        logger.debug("Procesando petición: {} {}", method, requestPath);
+        logger.debug("Procesando peticion: {} {}", method, requestPath);
 
-        // 1. Verificar si la ruta es pública
+        // 1. Verificar si la ruta es publica
         if (isPublicPath(requestPath)) {
-            logger.debug("Ruta pública, continuando sin autenticación");
+            logger.debug("Ruta publica, continuando sin autenticacion");
             filterChain.doFilter(request, response);
             return;
         }
@@ -60,7 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.warn("Token no encontrado en la petición: {}", requestPath);
+            logger.warn("Token no encontrado en la peticion: {}", requestPath);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Token no proporcionado\", \"status\": 401}");
@@ -72,28 +72,28 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             // 3. Validar el token
             if (jwtUtil.validarToken(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                
-                // 4. Extraer información del token
+
+                // 4. Extraer informacion del token
                 String email = jwtUtil.extraerEmail(token);
                 String rol = jwtUtil.extraerRol(token);
                 String id = jwtUtil.extraerId(token);
 
-                logger.info("Token válido para usuario: {} con rol: {} y id: {}", email, rol, id);
+                logger.info("Token valido para usuario: {} con rol: {} y id: {}", email, rol, id);
 
-                // 5. Crear la autenticación
+                // 5. Crear la autenticacion
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(rol);
-                UsernamePasswordAuthenticationToken authToken = 
+                UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(authority));
-                
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 // 6. Guardar en el contexto de seguridad
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                logger.warn("Token inválido o ya autenticado para: {}", requestPath);
+                logger.warn("Token invalido o ya autenticado para: {}", requestPath);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Token inválido o expirado\", \"status\": 401}");
+                response.getWriter().write("{\"error\": \"Token invalido o expirado\", \"status\": 401}");
                 return;
             }
 
@@ -110,14 +110,18 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Verifica si la ruta es pública.
+     * Verifica si la ruta es publica.
      */
     private boolean isPublicPath(String path) {
+        // Permitir el endpoint interno de usuarios
+        if (path.matches("/api/usuarios/[^/]+/internal")) {
+            return true;
+        }
         return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
     /**
-     * No aplicar el filtro a rutas públicas por defecto.
+     * No aplicar el filtro a rutas publicas por defecto.
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
